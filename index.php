@@ -8,6 +8,9 @@ if (isset($_FILES['image'])) {
     $file_size = $_FILES['image']['size'];
 
     if (file_exists($file)) {
+        
+        compress($file, $file, $compress_image_quality);
+        
         $imagesizedata = getimagesize($file);
         if ($imagesizedata === FALSE) {
             $errors[] = 'Not a valid Image';

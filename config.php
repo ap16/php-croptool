@@ -311,3 +311,16 @@ function resizeImage($src_file, array $dst, array $dst_size = array(), &$ecode =
     imagedestroy($dst_image);
     return true;
 }
+
+$compress_image_quality = 70;
+function compress($source, $destination, $quality = 70) {
+    $info = getimagesize($source);
+    if ($info['mime'] == 'image/jpeg')
+        $image = imagecreatefromjpeg($source);
+    elseif ($info['mime'] == 'image/gif')
+        $image = imagecreatefromgif($source);
+    elseif ($info['mime'] == 'image/png')
+        $image = imagecreatefrompng($source);
+    imagejpeg($image, $destination, $quality);
+    return $destination;
+}
