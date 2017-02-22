@@ -24,9 +24,11 @@ if (isset($_FILES['image'])) {
     if (empty($errors)) {
         $file_tmp = $_FILES['image']['tmp_name'];
         $file_name = $_FILES['image']['name'];
-        $file_ext = @strtolower(end(explode('.', $_FILES['image']['name'])));
-        $file_name_filter = strtolower(preg_replace('/[^a-zA-Z0-9_.]/', '_', basename($file_name, '.' . $file_ext)));
-        $new_file_name = $file_name_filter . '_' . CURRENT_TIMESTAMUNIX . '.' . strtolower($file_ext);
+
+        $pathInfo = pathinfo($file_name);
+        $file_ext = strtolower($pathInfo['extension']);
+        $file_name_filter = strtolower(preg_replace('/[^a-zA-Z0-9_.]/', '_', $pathInfo['filename']));
+        $new_file_name = $file_name_filter . '_' . CURRENT_TIMESTAMUNIX . '.' . $file_ext;
 
         $destination = IMAGES_PATH . DS . TEMP_IMAGE_FOLDER . DS . date('Ym');
         if (!is_dir($destination)) {
@@ -38,7 +40,7 @@ if (isset($_FILES['image'])) {
             die('Image Upload Failed');
         //echo "Success";
         //echo SITE_URL."/resize.php?imageName=".$name.'.'.$file_ext.'&site_id='.$site_id.'&content_type='.$content_type;die;
-        header("location:" . SITE_URL . "resize.php?imageName=" . $new_file_name);
+        header("location:" . SITE_URL . "resize.php?imageName=" . $new_file_name . "&page=" . $_REQUEST['page'] . '&button=' . $_REQUEST['button']);
     } else {
         foreach ($errors as $er) {
             $errorDisplay = $er . '<br/>';
@@ -78,7 +80,7 @@ if (isset($_FILES['image'])) {
             <div class="form_div">
                 <form name="imageUpload"  method="POST" enctype="multipart/form-data" onSubmit="return Checkfile()">
                     <input type="file" id="filename" name="image" />
-                    <input type="hidden" name="folder" value="<? //= $_REQUEST['folder'];        ?>" />
+                    <input type="hidden" name="folder" value="<? //= $_REQUEST['folder'];            ?>" />
                     <input type="hidden" name="reqWidth" id="reqWidth" value="<?= $validationFile['size']['reqWidth'] ?>" />
                     <input type="hidden" name="reqHeight" id="reqHeight" value="<?= $validationFile['size']['reqHeight'] ?>" />
                     <input type="hidden" name="orgWidth" id="orgWidth" value="" />
@@ -87,71 +89,10 @@ if (isset($_FILES['image'])) {
                 </form>
             </div>
         </div>
-
-        <script type="text/javascript">
-            function Checkfile()
-            {
-
-                var fup = document.getElementById('filename');
-                var fileName = fup.value;
-                if (fileName == "")
-                {
-                    alert('Please upload image.');
-                    return false;
-                }
-
-                if (document.getElementById('orgWidth').value == '' || document.getElementById('orgHeight').value == '') {
-                    alert('Unknown Image');
-                    return false;
-                }
-
-            }
-
-            var _URL = window.URL || window.webkitURL;
-
-            $("#filename").change(function (e) {
-                var file, img, fileHandle;
-                fileHandle = this;
-
-                document.getElementById('orgWidth').value = '';
-                document.getElementById('orgHeight').value = '';
-
-                if ((file = this.files[0])) {
-                    var fileSize = parseInt(this.files[0].size);
-                    if (fileSize > <?= $validationFile['size']['max'] ?>) {
-                        alert('<?= $validationFile['size']['errormsg'] ?>');
-                        fileHandle.value = '';
-                        return false;
-                    }
-                    img = new Image();
-                    img.onload = function () {
-                        //alert(this.width + " " + this.height);
-                        var width = parseInt($("#reqWidth").val());
-                        var height = parseInt($("#reqHeight").val());
-                        if (parseInt(this.width) < width) {
-                            alert("Image width must be greater than " + width + "px.");
-                            fileHandle.value = '';
-                            return false;
-                        }
-                        if (parseInt(this.height) < height) {
-                            alert("Image Height must be greater than " + height + "px.");
-                            fileHandle.value = '';
-                            return false;
-                        }
-                        document.getElementById('orgWidth').value = this.width;
-                        document.getElementById('orgHeight').value = this.height;
-                    };
-                    img.onerror = function () {
-                        alert("not a valid file: " + file.type);
-                        fileHandle.value = '';
-                        return false;
-                    };
-                    img.src = _URL.createObjectURL(file);
-
-
-                }
-
-            });
-        </script>
     </body>
+<script type="text/javascript" language="javascript">
+var validateMaxSize = <?= $validationFile['size']['max'] ?>;
+var validateMaxSizeDisplayError = '<?= $validationFile['size']['errormsg'] ?>';
+</script>
+<script src="assets/js/custom.js"></script>
 </html>
